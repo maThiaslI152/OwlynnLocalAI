@@ -5,5 +5,10 @@ module.exports = function override(config, env) {
     { module: /node_modules\/@0no-co\/graphql.web/ }
   ];
 
+  // Disable source maps for node_modules
+  if (config.devtool) {
+    config.devtool = false;
+  }
+
   return config;
 }; 

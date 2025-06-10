@@ -8,7 +8,7 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material';
-import { Send as SendIcon, AttachFile as AttachFileIcon } from '@mui/icons-material';
+import { Send as SendIcon } from '@mui/icons-material';
 import ReactMarkdown from 'react-markdown';
 import axios from 'axios';
 import { useDropzone } from 'react-dropzone';

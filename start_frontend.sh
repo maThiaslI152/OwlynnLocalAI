@@ -1,14 +1,22 @@
 #!/bin/bash
 
-# Change to frontend directory
+echo "Building frontend for production..."
+
+# Change to the frontend directory
 cd Frontend
 
-# Install dependencies if node_modules doesn't exist
+# Ensure node_modules/.bin is in the PATH
+export PATH="$(pwd)/node_modules/.bin:$PATH"
+
+# Install dependencies if node_modules does not exist
 if [ ! -d "node_modules" ]; then
-    echo "Installing frontend dependencies..."
-    npm install
+  echo "Installing dependencies..."
+  npm install --legacy-peer-deps
 fi
 
-# Start the frontend development server
-echo "Starting frontend development server..."
-npm start 
+# Build the frontend for production
+npm run build
+
+# Serve the production build
+echo "Starting production server..."
+npx serve -s build 
