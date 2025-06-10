@@ -129,8 +129,36 @@ const Chat: React.FC = () => {
           p: 2,
           overflow: 'auto',
           backgroundColor: 'background.paper',
+          position: 'relative',
+          ...(isDragActive && {
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            },
+            '&::after': {
+              content: '"Drop files here"',
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              color: 'white',
+              fontSize: '1.5rem',
+              zIndex: 2,
+            }
+          })
         }}
+        {...getRootProps()}
       >
+        <input {...getInputProps()} />
         {messages.map((message, index) => (
           <Box
             key={index}
@@ -187,32 +215,21 @@ const Chat: React.FC = () => {
       <Paper
         component="form"
         onSubmit={handleSubmit}
-        {...getRootProps()}
         sx={{
           p: 2,
           display: 'flex',
+          gap: 2,
           alignItems: 'center',
-          backgroundColor: isDragActive ? 'action.hover' : 'background.paper',
-          border: '2px dashed',
-          borderColor: isDragActive ? 'primary.main' : 'transparent',
         }}
       >
-        <input {...getInputProps()} />
         <TextField
           fullWidth
-          variant="outlined"
-          placeholder={isDragActive ? "Drop files here..." : "Type your message or drag & drop files..."}
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          placeholder="Type your message..."
           disabled={isLoading}
-          sx={{ mr: 1 }}
         />
-        <IconButton
-          color="primary"
-          type="submit"
-          disabled={isLoading || !input.trim()}
-          aria-label="Send message"
-        >
+        <IconButton type="submit" disabled={isLoading || !input.trim()}>
           <SendIcon />
         </IconButton>
       </Paper>
