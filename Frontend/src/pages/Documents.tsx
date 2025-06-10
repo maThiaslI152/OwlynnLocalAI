@@ -10,11 +10,16 @@ import {
   IconButton,
   CircularProgress,
   Alert,
+  Button,
+  Grid,
+  Card,
+  CardContent,
+  TextField,
+  InputAdornment
 } from '@mui/material';
 import {
   Description as DocumentIcon,
   Delete as DeleteIcon,
-  Search as SearchIcon,
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
 import axios from 'axios';

@@ -153,6 +153,7 @@ const Chat: React.FC = () => {
           color="primary"
           type="submit"
           disabled={isLoading || !input.trim()}
+          aria-label="Send message"
         >
           <SendIcon />
         </IconButton>
