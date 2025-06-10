@@ -12,7 +12,6 @@ const Navigation = () => {
           </Typography>
           <Box sx={{ display: 'flex', gap: 2 }}>
             <Link to="/" style={{ color: 'white', textDecoration: 'none' }}>Chat</Link>
-            <Link to="/documents" style={{ color: 'white', textDecoration: 'none' }}>Documents</Link>
             <Link to="/settings" style={{ color: 'white', textDecoration: 'none' }}>Settings</Link>
           </Box>
         </Toolbar>

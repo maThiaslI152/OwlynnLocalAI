@@ -6,10 +6,13 @@ import {
   IconButton,
   Typography,
   CircularProgress,
+  Alert,
 } from '@mui/material';
-import { Send as SendIcon } from '@mui/icons-material';
+import { Send as SendIcon, AttachFile as AttachFileIcon } from '@mui/icons-material';
 import ReactMarkdown from 'react-markdown';
 import axios from 'axios';
+import { useDropzone } from 'react-dropzone';
+import { uploadDocument } from '../services/api';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -21,7 +24,53 @@ const Chat: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop: handleFileDrop,
+    accept: {
+      'text/*': ['.txt', '.md'],
+      'application/pdf': ['.pdf'],
+      'application/msword': ['.doc'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'application/rtf': ['.rtf'],
+      'text/csv': ['.csv'],
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['.pptx'],
+      'text/x-python': ['.py'],
+      'application/javascript': ['.js'],
+      'application/json': ['.json'],
+      'text/yaml': ['.yml', '.yaml'],
+      'text/html': ['.html'],
+      'application/xml': ['.xml'],
+      'text/css': ['.css'],
+      'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff'],
+    },
+  });
+
+  async function handleFileDrop(acceptedFiles: File[]) {
+    setUploadError(null);
+    setIsLoading(true);
+
+    try {
+      for (const file of acceptedFiles) {
+        const result = await uploadDocument(file);
+        
+        // Add a system message about the uploaded file
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: `File "${file.name}" has been uploaded and processed successfully.`,
+          metadata: result
+        }]);
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      setUploadError('Error uploading file. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -58,7 +107,6 @@ const Chat: React.FC = () => {
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Error sending message:', error);
-      // Add error message to chat
       setMessages((prev) => [
         ...prev,
         {
@@ -130,20 +178,30 @@ const Chat: React.FC = () => {
         <div ref={messagesEndRef} />
       </Paper>
 
+      {uploadError && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {uploadError}
+        </Alert>
+      )}
+
       <Paper
         component="form"
         onSubmit={handleSubmit}
+        {...getRootProps()}
         sx={{
           p: 2,
           display: 'flex',
           alignItems: 'center',
-          backgroundColor: 'background.paper',
+          backgroundColor: isDragActive ? 'action.hover' : 'background.paper',
+          border: '2px dashed',
+          borderColor: isDragActive ? 'primary.main' : 'transparent',
         }}
       >
+        <input {...getInputProps()} />
         <TextField
           fullWidth
           variant="outlined"
-          placeholder="Type your message..."
+          placeholder={isDragActive ? "Drop files here..." : "Type your message or drag & drop files..."}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={isLoading}

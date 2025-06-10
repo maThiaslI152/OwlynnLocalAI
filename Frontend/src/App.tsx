@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { CopilotKit } from '@copilotkit/react-core';
 import Chat from './pages/Chat';
-import Documents from './pages/Documents';
 import Settings from './pages/Settings';
 import Navigation from './components/Navigation';
 
@@ -30,7 +29,6 @@ function App() {
           <Navigation />
           <Routes>
             <Route path="/" element={<Chat />} />
-            <Route path="/documents" element={<Documents />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>
         </ThemeProvider>
