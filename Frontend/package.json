@@ -1,33 +1,36 @@
 {
-  "name": "owlynn-local-ai-frontend",
+  "name": "frontend",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@copilotkit/react-core": "1.8.14",
-    "@copilotkit/react-ui": "^0.2.0",
-    "@copilotkit/shared": "1.8.14",
-    "@emotion/react": "^11.11.1",
+    "@copilotkit/react-core": "^1.8.14",
+    "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.0",
-    "@mui/icons-material": "^5.14.19",
-    "@mui/material": "^5.14.20",
+    "@mui/icons-material": "^5.15.12",
+    "@mui/material": "^5.15.12",
     "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.68",
-    "@types/react": "^18.2.42",
-    "@types/react-dom": "^18.2.17",
-    "ajv": "^8.17.1",
-    "ajv-keywords": "^5.1.0",
-    "axios": "^1.6.2",
+    "@testing-library/react": "^14.2.1",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.25",
+    "@types/react": "^18.2.64",
+    "@types/react-dom": "^18.2.21",
+    "axios": "^1.6.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-dropzone": "^14.2.3",
+    "react-dropzone": "^14.3.8",
     "react-markdown": "^9.0.1",
-    "react-router-dom": "^6.20.1",
-    "react-scripts": "^0.0.0",
+    "react-router-dom": "^6.22.3",
+    "serve": "^14.2.4",
     "typescript": "^4.9.5",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^3.5.2"
+  },
+  "devDependencies": {
+    "nth-check": "^2.1.1",
+    "postcss": "^8.4.35",
+    "prismjs": "^1.29.0",
+    "react-scripts": "^5.0.1",
+    "webpack-dev-server": "^5.2.2"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -52,11 +55,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "nth-check": "^2.1.1",
-    "postcss": "^8.5.4",
-    "prismjs": "^1.30.0",
-    "webpack-dev-server": "^5.2.2"
   }
 }
