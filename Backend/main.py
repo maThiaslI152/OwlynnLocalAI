@@ -5,6 +5,7 @@ import uuid
 import os
 from pathlib import Path
 from pydantic import BaseModel
+import traceback
 
 from core.config import settings
 from core.memory import MemoryManager
@@ -58,6 +59,7 @@ async def chat(request: ChatRequest) -> Dict[str, Any]:
             "metadata": ai_message.metadata
         }
     except Exception as e:
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/v1/upload")

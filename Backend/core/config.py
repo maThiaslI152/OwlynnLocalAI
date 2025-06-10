@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     # Database
     POSTGRES_USER: str = "owlynn"
     POSTGRES_PASSWORD: str = "owlynn_password"
-    POSTGRES_DB: str = "owlynn_db"
+    POSTGRES_DB: str = "owlynn"
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: int = 5432
     
@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     # Chroma
     CHROMA_HOST: str = "localhost"
     CHROMA_PORT: int = 8000
+    CHROMA_AUTH_TOKEN: str = "chroma_token"
     
     # File Processing
     MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10MB

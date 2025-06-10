@@ -7,6 +7,7 @@ from chromadb.config import Settings as ChromaSettings
 from core.config import settings
 import json
 from datetime import datetime
+from llm import Message  # <-- Add this import
 
 class MemoryManager:
     def __init__(self):
@@ -31,8 +32,13 @@ class MemoryManager:
             host=settings.CHROMA_HOST,
             port=settings.CHROMA_PORT,
             settings=ChromaSettings(
-                anonymized_telemetry=False
-            )
+                anonymized_telemetry=False,
+                allow_reset=True,
+                is_persistent=True
+            ),
+            headers={
+                "X-Chroma-Token": settings.CHROMA_AUTH_TOKEN
+            }
         )
         
         self._init_databases()
@@ -67,20 +73,22 @@ class MemoryManager:
         self.chroma_client.get_or_create_collection("documents")
         self.chroma_client.get_or_create_collection("conversations")
     
-    def store_conversation(self, session_id: str, messages: List[Dict[str, Any]], metadata: Optional[Dict[str, Any]] = None):
+    def store_conversation(self, session_id: str, messages: List[Message], metadata: Optional[Dict[str, Any]] = None):
         """Store conversation in both Redis (STM) and PostgreSQL (LTM)"""
+        # Convert Message objects to dictionaries
+        messages_dict = [{"role": msg.role, "content": msg.content, "metadata": msg.metadata} for msg in messages]
         # Store in Redis with 24-hour expiration
         self.redis_client.setex(
             f"conv:{session_id}",
             86400,  # 24 hours
-            json.dumps({"messages": messages, "metadata": metadata or {}})
+            json.dumps({"messages": messages_dict, "metadata": metadata or {}})
         )
         
         # Store in PostgreSQL
         with self.pg_conn.cursor() as cur:
             cur.execute(
                 "INSERT INTO conversations (session_id, messages, metadata) VALUES (%s, %s, %s)",
-                (session_id, json.dumps(messages), json.dumps(metadata or {}))
+                (session_id, json.dumps(messages_dict), json.dumps(metadata or {}))
             )
         self.pg_conn.commit()
     
