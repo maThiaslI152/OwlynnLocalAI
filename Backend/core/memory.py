@@ -113,7 +113,7 @@ class MemoryManager:
                 }
         return None
     
-    def store_document(self, filename: str, file_type: str, content: str, metadata: Optional[Dict[str, Any]] = None):
+    def store_document(self, filename: str, file_type: str, content: str, metadata: Optional[Dict[str, Any]] = None, embeddings: Optional[list] = None):
         """Store document in PostgreSQL and its embeddings in ChromaDB"""
         # Store in PostgreSQL
         with self.pg_conn.cursor() as cur:
@@ -124,12 +124,12 @@ class MemoryManager:
             doc_id = cur.fetchone()[0]
         self.pg_conn.commit()
         
-        # Store in ChromaDB (assuming embeddings are provided in metadata)
-        if metadata and "embeddings" in metadata:
+        # Store in ChromaDB (if embeddings are provided)
+        if embeddings is not None:
             self.chroma_client.get_collection("documents").add(
                 ids=[str(doc_id)],
-                embeddings=[metadata["embeddings"]],
-                metadatas=[metadata],
+                embeddings=[embeddings],
+                metadatas=[metadata or {}],
                 documents=[content]
             )
     

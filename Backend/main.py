@@ -45,7 +45,7 @@ async def chat(request: ChatRequest) -> Dict[str, Any]:
         if not session_id:
             session_id = str(uuid.uuid4())
         conversation = memory_manager.get_conversation(session_id)
-        messages = conversation["messages"] if conversation else []
+        messages = [Message(**msg) if isinstance(msg, dict) else msg for msg in (conversation["messages"] if conversation else [])]
         user_message = Message(role="user", content=message, metadata=context or {})
         messages.append(user_message)
         langgraph_messages = [convert_to_langgraph_message(msg) for msg in messages]
