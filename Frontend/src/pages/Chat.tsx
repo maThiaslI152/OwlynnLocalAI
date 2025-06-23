@@ -8,11 +8,11 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material';
-import { Send as SendIcon } from '@mui/icons-material';
+import { Send as SendIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import ReactMarkdown from 'react-markdown';
 import axios from 'axios';
 import { useDropzone } from 'react-dropzone';
-import { uploadDocument } from '../services/api';
+import { uploadDocument, sendMessage } from '../services/api';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -20,11 +20,26 @@ interface Message {
   metadata?: Record<string, any>;
 }
 
+interface ChatState {
+  current_state: string;
+  context: Record<string, any>;
+}
+
+const STORAGE_KEY = 'chat_messages';
+
 const Chat: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>(() => {
+    // Load messages from localStorage on initial render
+    const savedMessages = localStorage.getItem(STORAGE_KEY);
+    return savedMessages ? JSON.parse(savedMessages) : [];
+  });
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [chatState, setChatState] = useState<ChatState>({
+    current_state: 'idle',
+    context: {}
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -47,7 +62,16 @@ const Chat: React.FC = () => {
       'text/css': ['.css'],
       'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff'],
     },
+    noClick: false,
+    noKeyboard: false,
+    multiple: true,
+    preventDropOnDocument: true,
   });
+
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+  }, [messages]);
 
   async function handleFileDrop(acceptedFiles: File[]) {
     setUploadError(null);
@@ -58,11 +82,14 @@ const Chat: React.FC = () => {
         const result = await uploadDocument(file);
         
         // Add a system message about the uploaded file
-        setMessages(prev => [...prev, {
-          role: 'assistant',
-          content: `File "${file.name}" has been uploaded and processed successfully.`,
-          metadata: result
-        }]);
+        setMessages(prev => {
+          const newMessage: Message = {
+            role: 'assistant',
+            content: `File "${file.name}" has been uploaded and processed successfully.`,
+            metadata: result
+          };
+          return [...prev, newMessage];
+        });
       }
     } catch (error) {
       console.error('Error uploading file:', error);
@@ -94,14 +121,12 @@ const Chat: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:8001/api/v1/chat', {
-        message: userMessage.content,
-      });
-
+      const response = await sendMessage(userMessage.content);
+      
       const assistantMessage: Message = {
         role: 'assistant',
-        content: response.data.response,
-        metadata: response.data.metadata,
+        content: response.response,
+        metadata: response.metadata,
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
@@ -119,6 +144,12 @@ const Chat: React.FC = () => {
     }
   };
 
+  // Add a function to clear chat history
+  const clearChatHistory = () => {
+    setMessages([]);
+    localStorage.removeItem(STORAGE_KEY);
+  };
+
   return (
     <Box sx={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
       <Paper
@@ -130,6 +161,7 @@ const Chat: React.FC = () => {
           overflow: 'auto',
           backgroundColor: 'background.paper',
           position: 'relative',
+          transition: 'all 0.2s ease-in-out',
           ...(isDragActive && {
             '&::before': {
               content: '""',
@@ -143,6 +175,7 @@ const Chat: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              transition: 'all 0.2s ease-in-out',
             },
             '&::after': {
               content: '"Drop files here"',
@@ -152,7 +185,10 @@ const Chat: React.FC = () => {
               transform: 'translate(-50%, -50%)',
               color: 'white',
               fontSize: '1.5rem',
+              fontWeight: 'bold',
               zIndex: 2,
+              textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+              transition: 'all 0.2s ease-in-out',
             }
           })
         }}
@@ -173,36 +209,19 @@ const Chat: React.FC = () => {
               sx={{
                 p: 2,
                 maxWidth: '70%',
-                backgroundColor: message.role === 'user' ? 'primary.dark' : 'background.paper',
+                backgroundColor: message.role === 'user' ? 'primary.light' : 'background.paper',
+                color: message.role === 'user' ? 'primary.contrastText' : 'text.primary',
               }}
             >
-              <Typography
-                variant="body1"
-                component="div"
-                sx={{
-                  '& pre': {
-                    backgroundColor: 'background.default',
-                    p: 1,
-                    borderRadius: 1,
-                    overflow: 'auto',
-                  },
-                  '& code': {
-                    backgroundColor: 'background.default',
-                    p: 0.5,
-                    borderRadius: 0.5,
-                  },
-                }}
-              >
-                <ReactMarkdown>{message.content}</ReactMarkdown>
-              </Typography>
+              <ReactMarkdown>{message.content}</ReactMarkdown>
+              {message.metadata && (
+                <Typography variant="caption" color="text.secondary">
+                  {JSON.stringify(message.metadata)}
+                </Typography>
+              )}
             </Paper>
           </Box>
         ))}
-        {isLoading && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
-            <CircularProgress size={24} />
-          </Box>
-        )}
         <div ref={messagesEndRef} />
       </Paper>
 
@@ -212,27 +231,42 @@ const Chat: React.FC = () => {
         </Alert>
       )}
 
-      <Paper
-        component="form"
-        onSubmit={handleSubmit}
-        sx={{
-          p: 2,
-          display: 'flex',
-          gap: 2,
-          alignItems: 'center',
-        }}
-      >
+      {chatState.current_state !== 'idle' && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Current state: {chatState.current_state}
+        </Alert>
+      )}
+
+      <Box sx={{ display: 'flex', gap: 1 }}>
         <TextField
           fullWidth
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Type your message..."
           disabled={isLoading}
+          onKeyPress={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleSubmit(e);
+            }
+          }}
         />
-        <IconButton type="submit" disabled={isLoading || !input.trim()}>
-          <SendIcon />
+        <IconButton
+          color="primary"
+          onClick={handleSubmit}
+          disabled={isLoading || !input.trim()}
+          aria-label="Send message"
+        >
+          {isLoading ? <CircularProgress size={24} /> : <SendIcon />}
         </IconButton>
-      </Paper>
+        <IconButton
+          color="secondary"
+          onClick={clearChatHistory}
+          title="Clear chat history"
+        >
+          <DeleteIcon />
+        </IconButton>
+      </Box>
     </Box>
   );
 };

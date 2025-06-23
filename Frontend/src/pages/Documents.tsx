@@ -52,6 +52,10 @@ const Documents: React.FC = () => {
       'text/css': ['.css'],
       'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff'],
     },
+    noClick: false,
+    noKeyboard: false,
+    multiple: true,
+    preventDropOnDocument: true,
   });
 
   async function handleFileDrop(acceptedFiles: File[]) {
@@ -116,6 +120,17 @@ const Documents: React.FC = () => {
           backgroundColor: isDragActive ? 'action.hover' : 'background.paper',
           border: '2px dashed',
           borderColor: isDragActive ? 'primary.main' : 'divider',
+          transition: 'all 0.2s ease-in-out',
+          '&:hover': {
+            borderColor: 'primary.main',
+            backgroundColor: 'action.hover',
+          },
+          position: 'relative',
+          minHeight: '150px',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
         }}
       >
         <input {...getInputProps()} />
@@ -127,6 +142,22 @@ const Documents: React.FC = () => {
         <Typography variant="body2" color="text.secondary">
           Supported formats: TXT, MD, PDF, DOCX, RTF, CSV, XLSX, PPTX, PY, JS, JSON, YAML, HTML, XML, CSS, Images
         </Typography>
+        {isDragActive && (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1,
+            }}
+          />
+        )}
       </Paper>
 
       {error && (

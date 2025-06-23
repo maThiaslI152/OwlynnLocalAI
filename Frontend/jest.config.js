@@ -8,4 +8,7 @@ module.exports = {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
   },
   setupFilesAfterEnv: ['@testing-library/jest-dom/extend-expect'],
+  transformIgnorePatterns: [
+    "node_modules/(?!(react-markdown)/)"
+  ]
 }; 

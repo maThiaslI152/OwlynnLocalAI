@@ -21,7 +21,7 @@ const theme = createTheme({
 function App() {
   return (
     <CopilotKit
-      runtimeUrl="http://localhost:8001/api/v1"
+      runtimeUrl="http://localhost:8001/api/v1/chat"
     >
       <CssBaseline />
       <Router>

@@ -3,10 +3,9 @@ import axios from 'axios';
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8001';
 
 export const sendMessage = async (message: string, sessionId?: string) => {
-  const response = await axios.post(`${API_BASE_URL}/chat`, {
-    message,
-    session_id: sessionId
-  });
+  const payload: any = { message };
+  if (sessionId !== undefined) payload.session_id = sessionId;
+  const response = await axios.post(`${API_BASE_URL}/api/v1/chat`, payload);
   return response.data;
 };
 

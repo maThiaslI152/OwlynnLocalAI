@@ -11,6 +11,8 @@ llm = ChatOpenAI(
     openai_api_key="none",
     temperature=0.65,
     max_tokens=8096,
+    stop=["Human:", "Assistant:"],
+    model="Qwen3-14B"
 )
 
 # Pydantic models Types
@@ -28,11 +30,17 @@ class State(BaseModel):
 # Convert Pydantic models to LangGraph nodes
 def convert_to_langgraph_message(message: Message) -> Union[HumanMessage, AIMessage]:
     if message.role == "user":
-        return HumanMessage(content=message.content)
-    return AIMessage(content=message.content)
+        return HumanMessage(content=f"Human: {message.content}")
+    return AIMessage(content=f"Assistant: {message.content}")
 
 def convert_to_pydantic_message(message: Union[HumanMessage, AIMessage]) -> Message:
     role = "user" if isinstance(message, HumanMessage) else "assistant"
-    return Message(role=role, content=message.content)
+    content = message.content
+    # Remove role prefixes if present
+    if content.startswith("Human: "):
+        content = content[7:]
+    elif content.startswith("Assistant: "):
+        content = content[11:]
+    return Message(role=role, content=content)
 
 # Chat 

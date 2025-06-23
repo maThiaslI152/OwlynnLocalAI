@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Chat from '../../../pages/Chat';
@@ -12,7 +12,7 @@ jest.mock('../../../services/api', () => ({
   })
 }));
 
-jest.mock('react-markdown', () => () => <div data-testid="react-markdown" />);
+jest.mock('react-markdown', () => ({ children }: { children: ReactNode }) => <div>{children}</div>);
 
 describe('Chat Component', () => {
   beforeEach(() => {
@@ -47,6 +47,6 @@ describe('Chat Component', () => {
     fireEvent.change(input, { target: { value: 'Test message' } });
     fireEvent.click(sendButton);
 
-    expect(screen.getByText(/loading/i)).toBeInTheDocument();
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
   });
 }); 
